@@ -204,4 +204,5 @@ DTL - django's default engine
   Django ships with about two dozen built-in template tags. You can read all about them in the built-in tag reference. To give you a taste of what’s available, here are some of the more commonly used tags:
 
   # TODO: Remove hardcoded urls
-  
+
+  # Add colaborator
