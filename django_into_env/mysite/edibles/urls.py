@@ -1,6 +1,9 @@
 from django.urls import path
 from . import views
 
+# namespacing
+app_name = 'edibles'
+
 urlpatterns = [
     path('', views.index, name='index'),
     path('item/', views.item, name='item'),
