@@ -35,3 +35,13 @@ def create_item(request):
     return redirect('edibles:index')
 
   return render(request, 'edibles/item-form.html', {'form':form})
+
+def update_item(request, id):
+  item = item.objects.get(id=id)
+  form = ItemForm(request.POST or None, instance=item)
+
+  if form.is_valid():
+    form.save()
+    return redirect('edibles:index')
+
+  return render(request, 'edibles/item-form.html', {'form':form}, 'item':item)
