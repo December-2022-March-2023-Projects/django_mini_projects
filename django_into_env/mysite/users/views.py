@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .forms import RegistrationForm
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 def register(request):
@@ -14,3 +15,8 @@ def register(request):
   else:
     form = RegistrationForm()
   return render (request, 'users/register.html', {'form':form})
+
+# Display error message when logged out
+@login_required
+def profile_page(request):
+  return render(request, 'users/profile.html')
