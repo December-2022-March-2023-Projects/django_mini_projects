@@ -340,3 +340,10 @@ Adding Image Field to Model
   ```
   python manage.py migrate
   ```
+
+- Profile image requirements
+  - [`pillow`](https://pypi.org/project/Pillow/)
+  
+  ```
+  pip install pillow
+  ```
