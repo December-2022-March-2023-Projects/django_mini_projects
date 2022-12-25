@@ -1,8 +1,24 @@
-{% extends 'edibles/base.html' %}
+{% extends "edibles/base.html" %}
+
 {% block body %}
-<form method="POST">
-  {% csrf_token %}
-  {{ form }}
-  <button type="submit">Save</button>
-</form>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-4 offset-md-4">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <div class="card-title">Add Item</div>
+        </div>
+        <div class="card-body">
+          <form method="POST">
+            {% csrf_token %}
+            {{ form }}
+            <button class="btn btn-primary" type="submit">Save</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
