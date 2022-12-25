@@ -5,6 +5,7 @@ from django.template import loader
 from .forms import ItemForm
 from django.views.generic.list import ListView
 from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView
 
 # Create your views here.
 
@@ -47,6 +48,20 @@ def create_item(request):
     return redirect('edibles:index')
 
   return render(request, 'edibles/item-form.html', {'form':form})
+
+# class based view for create_item
+class CreateItem(CreateView):
+  model = Item
+  fields = ['item_name', 'item_desc', 'item_price', 'item_image']
+  template_name = 'edibles/item-form.html'
+
+  # function that accepts the form
+  def form_valid(self, form):
+    form.instance.user_name = self.request.user
+
+    return super().form_valid(form)
+
+
 
 def update_item(request, id):
   item = item.objects.get(id=id)
