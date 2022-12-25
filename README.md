@@ -347,3 +347,243 @@ Adding Image Field to Model
   ```
   pip install pillow
   ```
+
+[Managing Static Files Django](https://docs.djangoproject.com/en/4.1/howto/static-files/)
+-
+
+  - Serving static files during development
+      If you use `django.contrib.staticfiles` , runserver will do this automatically when DEBUG is set to True. If you don’t have `django.contrib.staticfiles` in `INSTALLED_APPS`, you can still manually serve static files using the `django.views.static.serve()` view.
+      <br><br>
+      This is not suitable for production use! For some common deployment strategies, see How to deploy static files.
+      <br><br>
+      For example, if your `STATIC_URL` is defined as `static/`, you can do this by adding the following snippet to your `urls.py`:
+      ```py
+      from django.conf import settings
+      from django.conf.urls.static import static
+
+      urlpatterns = [
+          # ... the rest of your URLconf goes here ...
+      ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+      ```
+
+[Signals](https://docs.djangoproject.com/en/4.1/topics/signals/)
+-
+
+Signals allow certain senders to notify a set of receivers that some action has taken place. 
+<br><br>
+Example:  a third-party app can register to be notified of settings changes:
+
+```py
+
+from django.apps import AppConfig
+from django.core.signals import setting_changed
+
+def my_callback(sender, **kwargs):
+    print("Setting changed!")
+
+class MyAppConfig(AppConfig):
+    ...
+
+    def ready(self):
+        setting_changed.connect(my_callback)
+```
+
+- Django includes a `“signal dispatcher”` which helps decoupled applications get notified when actions occur elsewhere in the framework. 
+- `User` -> `Profile`
+- `Senders` ---Notification---> ` Receivers`
+- `User registration` ---> `User profile` - Whenever the user registration is going to occur, we are going to get a signal and that signal is going to be sent to the user profile 
+
+[Class-based views](https://docs.djangoproject.com/en/4.1/topics/class-based-views/)
+-
+
+- A view is a callable which takes a request and returns a response.
+- Class-based views provide an alternative way to implement views as Python objects instead of functions. They do not replace function-based views, but have certain differences and advantages when compared to function-based views:
+
+    - Organization of code related to specific HTTP methods (GET, POST, etc.) can be addressed by separate methods instead of conditional branching.
+    - Object oriented techniques such as mixins (multiple inheritance) can be used to factor code into reusable components.
+
+    Using class-based views
+    -
+
+    - At its core, a class-based view allows you to respond to different HTTP request methods with different class instance methods, instead of with conditionally branching code inside a single view function.
+
+    - So where the code to handle HTTP GET in a view function would look something like:
+
+    ```py
+    from django.http import HttpResponse
+
+    def my_view(request):
+        if request.method == 'GET':
+            # <view logic>
+            return HttpResponse('result')
+    ```
+    - In a class-based view, this would become:
+
+    ```py
+    from django.http import HttpResponse
+    from django.views import View
+
+    class MyView(View):
+        def get(self, request):
+            # <view logic>
+            return HttpResponse('result')
+    ```
+
+    - Because Django’s URL resolver expects to send the request and associated arguments to a callable function, not a class, class-based views have an as_view() class method which returns a function that can be called when a request arrives for a URL matching the associated pattern. The function creates an instance of the class, calls setup() to initialize its attributes, and then calls its dispatch() method. dispatch looks at the request to determine whether it is a GET, POST, etc, and relays the request to a matching method if one is defined, or raises HttpResponseNotAllowed if not:
+
+
+    ```py
+    # urls.py
+    from django.urls import path
+    from myapp.views import MyView
+
+    urlpatterns = [
+        path('about/', MyView.as_view()),
+    ]
+    ```
+
+    > [Further reading](https://docs.djangoproject.com/en/4.1/topics/class-based-views/intro/)
+
+Django: `get_absolute_url()`
+=
+
+ Example: implementing a simple CRUID with `Posts` resource
+
+ Model
+ -
+
+ - Create a basic `Post` model with two properties a `title` and `content`
+
+  ```py
+  from django.db import models
+
+  class Post(models.Model):
+      title = models.CharField(max_length=200)
+      content = models.TextField(max_length=200, unique=True)
+      
+      def __str__(self):
+        return self.title
+  ```
+
+  View
+  -
+
+  Then add basic view functions, one responsible for returning all posts — filtering the last three in this particular case — and the other, responsible for displaying a detail page of each post.
+
+  ```py
+  from django.shorcuts import render, get_object_or_404, redirect
+  from .models import Post
+
+  def all_post(request):
+    return render(request, 'index.html', {
+      'post': Post.objects.all()[:3]
+    })
+
+  def post_detail(request, pk):
+    return render(request, 'detail.html', {
+      'post': get_object_or_404(Post, pk=id)
+    })
+  ```
+
+  URLs
+  -
+
+  ```py
+  from django.urls import path
+  from . import views
+
+  urlpatterns = [
+    path('',views.all_post, name='posts'),
+    path('',views.post_detail, name='post_detail'),
+  ]
+  ```
+
+  Template
+
+  ```html
+  // index.html
+  {% for post in posts %}
+  <ul>
+    <li><a href="{% url 'app_name:post_detail' pk=post.id %}">
+      {{post.title}}</a>
+  </ul>
+    </li>
+  </ul>
+  {% endfor %}
+  ```
+
+  Up to now, that’s basic of a resource life cycle in Django: Data collected, then processed and finally display.
+  <br><br>
+
+  - Models -> Views -> Templates.
+
+  Then rendering the `detail` page when the URL is fired.
+
+
+  ```html
+  // detail.html
+  <h5>{{ post.title }} </h5>
+  <p>{{ post.content }} </p>
+  ```
+
+  Go over the admin page to add data so we can test it out.
+  <br>
+  If you hit your app URL, it should return links with post titles you just added.
+  <br>
+  The way we’re passing the id to the URL in index.html can result in typos just for the simple fact that you need: the app_name, url_name then assign the post_id to the appropriate variable you’ve declared in views.py .
+  <br>
+  That’s where you should have a get_absolute_url() like function that handles rendering the resource detail page.
+  <br>
+
+  ```py
+  # models.py
+  from django.urls import reverse # add
+  ...
+  def __str__(self):
+    return self.title
+  def get_absolute_url(self): # new function
+    return reverse('post_detail', args=[str(self.id)])
+  ```
+
+  Now that we’ve added the function let’s how we make use of it for rendering the detail page.
+
+  ```html
+  // index.html
+  {% for post in posts %}
+  <ul>
+    <li>
+      <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+    </li> 
+  </ul>
+  ```
+
+  Project Summary
+  =
+
+  - Views
+    - Creating views and importance of views.
+    - Defining views using python functions, passed requests, rendered templates 
+  - URL Patterns
+    - Routing in django
+    - URL pattern definition in app `url.py` file of project `url.py` file
+  - Models
+    - Using models to create db tables
+    - Defining fields in models
+    - Making migrations and importance of migrations
+  - Admin Panel
+    - Creating super user to access admin panel
+    - Adding data as site admin
+  - Templates
+    Using html web pages in django
+    - Passing dinamic data obtained from the database to templates
+    - Data extraction using django models using django ORM.
+    - Passing data to templates
+  - Static Files
+     - Adding css to website using static files
+     - Creating static files folder
+     - Load static tag
+  - Authentication
+    - Login logout functionality
+  - Django Signals
+  - Class based Views
+  
