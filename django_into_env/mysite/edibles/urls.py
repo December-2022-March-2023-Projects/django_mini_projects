@@ -11,7 +11,7 @@ urlpatterns = [
     # path('checkout/', views.checkout, name='checkout'),
     path('<int:pk>', views.EdiblesDetail.as_view(), name = 'detail'),
     # add items
-    path('add', views.create_item, name='create_item'),
+    path('add', views.CreateItem.as_view(), name='create_item'),
     # edit
     path('update/<int:item_id>', views.update_item, name='update_item' ),
     # delete
