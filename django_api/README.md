@@ -32,3 +32,20 @@ Types of API Requests
 - HTTP PUT: Used to update existing resources ie Editing data
 - HTTP DELETE: Used to delete resources ie Deleting data
 
+Why would you need an API
+-
+
+- Make money selling data.
+- Developing a mobile app.
+- Let other developers integrate your content on their site.
+
+Django REST Framework
+-
+
+- A powerful web toolkit for building web APIs .
+- Suitable for building web APIs for Django applications
+- Requirements:
+  - A django application
+  - Python -v (3.5, ...)
+  - Django -v (1.11, ...)
+  
